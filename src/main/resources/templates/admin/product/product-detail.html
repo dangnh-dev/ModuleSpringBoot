@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+    <head th:replace="fragments :: html_head(pageTitle='Product - SB Admin')" />
+    <style>
+        #layoutSidenav_content  {
+            opacity:0;
+        }
+    </style>
+    <body class="sb-nav-fixed">
+        <nav th:replace="fragments :: navbar"></nav>
+        <div id="layoutSidenav">
+            <div th:replace="fragments :: sidenav"></div>
+            <div id="layoutSidenav_content">
+                <main>
+                    <div class="container-fluid px-4 mt-4">
+                        <div class="d-sm-flex align-items-center justify-content-between mb-4">
+                            <h2 class="mb-0 text-gray-800">Product</h2>
+                            <a th:href="@{/admin/product/add}" class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm"><i
+                                    class="fas fa-plus fa-sm"></i> Add Product</a>
+                        </div>
+                        <div class="card mb-4">
+                            <div class="card-header">
+                                <i class="fas fa-table me-1"></i>
+                                Product DataTable
+                            </div>
+                            <div class="card-body">
+                                <table id="datatablesSimple">
+                                    <thead>
+                                        <tr>
+                                            <th>Id</th>
+                                            <th>Name</th>
+                                            <th>Image</th>
+                                            <th>Price</th>
+                                            <th>Sale(%)</th>
+                                            <th>Amount</th>
+                                            <th>Category Type</th>
+                                            <th scope="col" colspan="2" style="text-align: center">Config</th>
+                                        </tr>
+                                    </thead>
+                                    <tfoot>
+                                        <tr>
+                                            <th>Id</th>
+                                            <th>Name</th>
+                                            <th>Image</th>
+                                            <th>Price</th>
+                                            <th>Sale(%)</th>
+                                            <th>Amount</th>
+                                            <th>Category Type</th>
+                                            <th scope="col" colspan="2" style="text-align: center">Config</th>
+                                        </tr>
+                                    </tfoot>
+                                    <tbody  id="listProduct">
+                                        <tr th:each="p: ${productList}">
+                                            <td th:text="${p.id}"></td>
+                                            <td th:text="${p.name}"></td>
+                                            <td><img th:src="|@{/images/}${p.image}|" class="img-fluid" alt=""></td>
+                                            <td th:text="${p.price}"></td>
+                                            <td th:text="${p.sale}"></td>
+                                            <td th:text="${p.amount}"></td>
+                                            <th:block th:each="c: ${categoryList}" th:if="${c.id == p.categoryId}">
+                                                <td th:text="${c.name}"></td>
+                                            </th:block>
+                                            <td style="text-align: center"><a th:href="|@{/admin/product/edit?id=}${p.id}|" class="d-none d-sm-inline-block btn btn-sm btn-success shadow-sm"><i
+                                                    class="fas fa-pen-to-square fa-sm"></i> Edit</a></td>
+                                            <td style="text-align: center"><a th:href="|@{/admin/product/delete?id=}${p.id}|" class="d-none d-sm-inline-block btn btn-sm btn-danger shadow-sm"><i
+                                                    class="fas fa-trash fa-sm"></i> Delete</a></td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </main>
+                <footer th:replace="fragments :: footer"></footer>
+            </div>
+        </div>
+        <div class="showImage">
+            <div class="overlay"></div>
+            <div class="img-show">
+                <i class="fas fa-times-circle"></i>
+                <img src="">
+            </div>
+        </div>
+        <script th:replace="fragments :: toastrOptions"></script>
+        <script>
+            window.onload = function() {
+                const { search } = window.location;
+                const deleteResult = (new URLSearchParams(search)).get('deleteResult');
+                const editResult = (new URLSearchParams(search)).get('editResult');
+
+                if (deleteResult === 'true') {
+                    // The page was just reloaded, display the toast:
+                    toastr.success('Delete Success');
+                } else if (editResult === 'true')  {
+                    toastr.success('Edit Success');
+                } else if (deleteResult === 'false')  {
+                    toastr.error('Delete Fail');
+                } else if (editResult === 'false')  {
+                    toastr.error('Edit Fail');
+                }
+            };
+            $(function () {
+                $(".img-fluid").click(function () {
+                    var $src = $(this).attr("src");
+                    $(".showImage").fadeIn(60);
+                    $(".img-show img").attr("src", $src);
+                });
+
+                $("i, .overlay").click(function () {
+                    $(".showImage").fadeOut(60);
+                });
+            });
+            $(document).ready(function() {
+                $('#layoutSidenav_content').css("opacity", "100");
+            });
+        </script>
+    </body>
+</html>
