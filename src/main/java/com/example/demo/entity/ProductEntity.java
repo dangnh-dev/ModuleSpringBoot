@@ -6,6 +6,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
+import java.util.List;
 
 @Entity
 @Table(name = "product")
@@ -30,6 +31,6 @@ public class ProductEntity {
     @ManyToOne
     @JoinColumn(name = "category_id")
     private CategoryEntity category;
-    @Column(name = "rate")
-    private float rate;
+    @OneToMany(mappedBy = "productEntity")
+    private List<RatingEntity> rates;
 }

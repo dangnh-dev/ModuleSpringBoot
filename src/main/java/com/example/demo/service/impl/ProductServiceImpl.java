@@ -1,9 +1,10 @@
-package com.example.demo.service;
+package com.example.demo.service.impl;
 
 import com.example.demo.entity.ProductEntity;
 import com.example.demo.model.ProductModel;
 import com.example.demo.repository.ICategoryRepository;
 import com.example.demo.repository.IProductRepository;
+import com.example.demo.service.IProductService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -12,7 +13,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Service
-public class ProductServiceImpl implements IProductService{
+public class ProductServiceImpl implements IProductService {
     @Autowired
     IProductRepository iProductRepository;
     @Autowired

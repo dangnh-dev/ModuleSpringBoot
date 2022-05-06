@@ -37,8 +37,8 @@
             }
         }
     </style>
-    <body>
-        <section style="background-color: #d2c9ff;">
+    <body style="background-color: #d2c9ff;">
+        <section>
             <div class="container py-5 h-100">
                 <div class="row d-flex justify-content-center align-items-center h-100">
                     <div class="col-12">
@@ -64,8 +64,8 @@
                                                         <h6 class="text-black mb-0" th:text="${item.value.product.name}"></h6>
                                                     </div>
                                                     <div class="col-md-3 col-lg-3 col-xl-2 d-flex">
-                                                        <input min="0" th:value="${item.value.quantity}" type="number"
-                                                               class="form-control form-control-sm"/>
+                                                        <input th:value="${item.value.quantity}" type="text"
+                                                               class="form-control form-control-sm text-center" style="width: 30px"/>
                                                     </div>
                                                     <div class="col-md-3 col-lg-2 col-xl-2 offset-lg-1">
                                                         <h6 class="mb-0" th:text="'$'+ ${item.value.product.price}"></h6>
@@ -91,6 +91,7 @@
 
                                             <div class="d-flex justify-content-between mb-4">
                                                 <h5 class="text-uppercase" th:text="${totalProduct} + ' items'"></h5>
+                                                <input id="totalProduct" th:value="${totalProduct}" hidden>
                                                 <h5 th:text="'$'+${totalPrice}"></h5>
                                                 <input id="totalPrice" th:value="${totalPrice}" hidden>
                                             </div>
@@ -113,7 +114,7 @@
                                                 <h5 id="priceWithShip"></h5>
                                             </div>
 
-                                            <button type="button" class="btn btn-dark btn-block btn-lg"
+                                            <button type="button" id="checkout" class="btn btn-dark btn-block btn-lg"
                                                     data-mdb-ripple-color="dark" style="width: 100%">Checkout
                                                 <i class="fas fa-long-arrow-alt-right ms-2"></i>
                                             </button>
@@ -128,6 +129,11 @@
             </div>
         </section>
         <script>
+            var totalProduct = $('#totalProduct').val();
+            if (totalProduct === '0'){
+                $('#checkout').prop('disabled', true);
+                $('select').prop('disabled', true);
+            }
             function chooseShipping(val){
                 var totalPrice = parseFloat($('#totalPrice').val());
                 switch (val){

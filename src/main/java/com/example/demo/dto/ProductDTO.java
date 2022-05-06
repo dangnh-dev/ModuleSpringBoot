@@ -18,7 +18,6 @@ public class ProductDTO {
     private Integer sale;
     private Integer amount;
     private Long categoryId;
-    private float rate;
 
     public ProductDTO toDTO(ProductModel productModel){
         return ProductDTO.builder()
@@ -29,7 +28,6 @@ public class ProductDTO {
                 .sale(productModel.getSale())
                 .amount(productModel.getAmount())
                 .categoryId(productModel.getCategoryId())
-                .rate(productModel.getRate())
                 .build();
     }
 }

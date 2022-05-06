@@ -19,7 +19,6 @@ public class ProductModel {
     private Integer sale;
     private Integer amount;
     private Long categoryId;
-    private float rate;
 
     public ProductModel fromEntityToModel(ProductEntity productEntity){
         return ProductModel.builder()
@@ -30,7 +29,6 @@ public class ProductModel {
                 .sale(productEntity.getSale())
                 .amount(productEntity.getAmount())
                 .categoryId(productEntity.getCategory().getId())
-                .rate(productEntity.getRate())
                 .build();
     }
 
@@ -43,7 +41,6 @@ public class ProductModel {
                 .sale(productDTO.getSale())
                 .amount(productDTO.getAmount())
                 .categoryId(productDTO.getCategoryId())
-                .rate(productDTO.getRate())
                 .build();
     }
 }

@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+    <head th:replace="fragments :: html_head(pageTitle='Shop HomePage')" />
+    <body>
+        <!-- Navigation-->
+        <nav th:replace="fragments :: homeNavbar"></nav>
+        <!-- Product section-->
+        <section class="py-5">
+            <div class="container px-4 px-lg-5 my-5">
+                <div class="row gx-4 gx-lg-5 align-items-center">
+                    <div class="col-md-6"><img class="card-img-top mb-5 mb-md-0" th:src="|@{/images/}${product.image}|" alt="..." /></div>
+                    <div class="col-md-6">
+                        <h1 class="display-5 fw-bolder" th:text="${product.name}"></h1>
+                        <div class="fs-5 mb-5">
+                            <span th:unless="${product.sale != 0}" th:text="'$'+${product.price}"></span>
+                            <th:block th:if="${product.sale != 0}" th:with="salePrice = ${product.price - (product.price * product.sale / 100)}">
+                                <span class="text-muted text-decoration-line-through" th:text="'$' + ${product.price}"></span>
+                                <span th:text="'$'+${salePrice}"></span>
+                            </th:block>
+                        </div>
+                        <div class="d-flex">
+                            <input class="form-control text-center me-3" id="inputQuantity" type="num" th:value="${product.amount}" style="max-width: 3rem" />
+                            <a class="btn btn-outline-dark flex-shrink-0" th:onclick="'addToCart('+ ${product.id} +')'">
+                                <i class="bi-cart-fill me-1"></i>
+                                Add to cart
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        <section class="py-5 bg-light">
+            <div class="container px-4 px-lg-5 mt-5">
+                <div class="rounded p-4 mb-5">
+                    <h5 class="mb-4">Leave Comment</h5>
+                    <p class="mb-1">Rate the Product</p>
+                    <form th:object="${rating}" method="post" th:action="|@{/detail/}${product.id}|">
+                        <div class="mb-2">
+                            <div class="rating"></div>
+                            <input id="rateValue" type="number" th:field="*{star}" hidden/>
+                        </div>
+                        <div class="mb-3">
+                            <label>Your Comment</label>
+                            <textarea class="form-control" style="height: 120px" th:field="*{comment}"></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <button class="btn btn-primary btn-sm" type="submit"> Submit Comment </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            <div class="rounded p-4 mb-4 restaurant-detailed-ratings-and-reviews">
+                <h5 class="mb-1">All Ratings and Reviews</h5>
+                <th:block th:each="r: ${ratingList}">
+                    <div class="reviews-members pt-4 pb-4">
+                        <div class="media">
+                            <div class="media-body">
+                                <div class="d-flex">
+                                    <img alt="Generic placeholder image" th:src="@{/images/avatar1.jpg}" class="me-3 rounded-pill">
+                                    <div class="mt-1">
+                                        <h6 class="mb-1">User</h6>
+                                        <p class="text-gray" th:text="${#temporals.format(r.date, 'HH:mm dd/MM/yyyy')}">Tue, 20 Mar 2020</p>
+                                    </div>
+<!--                                    <div class="rate ms-5" data-rate-value="5"></div>-->
+                                    <div class="rate ms-5" th:attr="data-rate-value=${r.star}"></div>
+                                </div>
+                                <div class="reviews-body">
+                                    <p th:text="${r.comment}">Contrary to popular belief, Lorem Ipsum is not simply random text. It has roots in a piece of classical Latin literature from 45 BC, making it over 2000 years old. Richard McClintock, a Latin professor at Hampden-Sydney College in Virginia, looked up one of the more obscure Latin words, consectetur, from a Lorem Ipsum passage, and going through the cites of the word in classical literature, discovered the undoubtable source. Lorem Ipsum comes from sections </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <hr>
+                </th:block>
+            </div>
+        </section>
+        <!-- Footer-->
+        <footer class="py-5 bg-dark">
+            <div class="container"><p class="m-0 text-center text-white">Copyright &copy; Your Website 2022</p></div>
+        </footer>
+        <script th:replace="fragments :: toastrOptions"></script>
+        <script>
+            function addToCart(id) {
+                toastr.options = {
+                    "preventDuplicates": false,
+                    "timeOut": 500,
+                }
+                $.ajax({
+                    url: '/cart/add?id='+id,
+                    type: 'GET',
+                    contentType: 'application/json',
+                    dataType: 'json',
+                    success: function (){
+                        toastr.success("Add to cart successfully");
+                    },
+                    error: function (jqXhr, textStatus, errorMessage){
+                        toastr.error("Error");
+                    }
+                })
+            }
+            $(document).ready(function() {
+                $('.rate').rate({
+                    readonly: true
+                });
+                $(".rating").rate({
+                    update_input_field_name: $("#rateValue")
+                });
+            })
+        </script>
+    </body>
+</html>

@@ -3,16 +3,23 @@ package com.example.demo.controller;
 import com.example.demo.dto.CategoryDTO;
 import com.example.demo.dto.NavbarDTO;
 import com.example.demo.dto.ProductDTO;
+import com.example.demo.dto.RatingDTO;
 import com.example.demo.model.CategoryModel;
 import com.example.demo.model.ProductModel;
+import com.example.demo.model.RatingModel;
 import com.example.demo.service.ICategoryService;
 import com.example.demo.service.IProductService;
+import com.example.demo.service.IRateService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -22,6 +29,8 @@ public class HomeController {
     ICategoryService iCategoryService;
     @Autowired
     IProductService iProductService;
+    @Autowired
+    IRateService iRateService;
 
     public List<CategoryDTO> getCategoryList(){
         List<CategoryModel> categoryModelList = iCategoryService.getAll();
@@ -43,8 +52,7 @@ public class HomeController {
         return productDTOList;
     }
 
-    @GetMapping(value = {"/", "/home"})
-    public String homePage(Model model){
+    public List<NavbarDTO> getNavbar(){
         List<CategoryDTO> categoryDTOList = getCategoryList();
         List<NavbarDTO> navbarDTOList = new ArrayList<>();
         List<Long> childId = new ArrayList<>();
@@ -69,10 +77,39 @@ public class HomeController {
             navbarDTOList.removeIf(n -> n.getId() == id);
         });
 
+        return navbarDTOList;
+    }
+
+    @GetMapping(value = {"/", "/home"})
+    public String homePage(Model model){
         model.addAttribute("productList", getProductList());
-        model.addAttribute("categoryList", navbarDTOList);
+        model.addAttribute("categoryList", getNavbar());
         return "index";
     }
 
+    @GetMapping("/detail/{id}")
+    public String productDetail(Model model, @PathVariable Long id){
+        ProductModel productModel = iProductService.findById(id);
+        ProductDTO productDTO = new ProductDTO().toDTO(productModel);
+        List<RatingModel> ratingModelList = iRateService.findAllByProductId(id);
+        List<RatingDTO> ratingDTOList = new ArrayList<>();
+        ratingModelList.forEach(r -> {
+            RatingDTO ratingDTO = new RatingDTO().toDTO(r);
+            ratingDTOList.add(ratingDTO);
+        });
+        model.addAttribute("product", productDTO);
+        model.addAttribute("rating", new RatingDTO());
+        model.addAttribute("categoryList", getNavbar());
+        model.addAttribute("ratingList", ratingDTOList);
+        return "item-detail";
+    }
 
+    @PostMapping("/detail/{id}")
+    public String newComment(RatingDTO ratingDTO, @PathVariable Long id){
+        ratingDTO.setDate(LocalDateTime.now());
+        ratingDTO.setProductEntityId(id);
+        RatingModel ratingModel = new RatingModel().fromDTOToModel(ratingDTO);
+        iRateService.save(ratingModel);
+        return "redirect:/detail/"+id;
+    }
 }
