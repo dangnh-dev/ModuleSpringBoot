@@ -6,6 +6,9 @@ import com.example.demo.repository.ICategoryRepository;
 import com.example.demo.repository.IProductRepository;
 import com.example.demo.service.IProductService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -20,7 +23,15 @@ public class ProductServiceImpl implements IProductService {
     ICategoryRepository iCategoryRepository;
 
     @Override
-    public List<ProductModel> getAll() {
+    public Page<ProductModel> getAll(Pageable pageable) {
+        Page<ProductEntity> productEntityPage = iProductRepository.findAll(pageable);
+        return productEntityPage.map(productEntity -> {
+            return new ProductModel().fromEntityToModel(productEntity);
+        });
+    }
+
+    @Override
+    public List<ProductModel> findAll() {
         List<ProductEntity> productEntityList = iProductRepository.findAll();
         List<ProductModel> productModelList = new ArrayList<>();
         productEntityList.forEach(p -> {
@@ -34,6 +45,14 @@ public class ProductServiceImpl implements IProductService {
     public ProductModel findById(Long id) {
         ProductEntity productEntity = iProductRepository.getById(id);
         return new ProductModel().fromEntityToModel(productEntity);
+    }
+
+    @Override
+    public Page<ProductModel> findByCategoryId(Long id, Pageable pageable) {
+        Page<ProductEntity> productEntityPage = iProductRepository.findAllByCategoryId(id, pageable);
+        return productEntityPage.map(productEntity -> {
+            return new ProductModel().fromEntityToModel(productEntity);
+        });
     }
 
     @Override
@@ -65,6 +84,7 @@ public class ProductServiceImpl implements IProductService {
             productEntity.setSale(productModel.getSale());
             productEntity.setAmount(productModel.getAmount());
             productEntity.setCategory(iCategoryRepository.getById(productModel.getCategoryId()));
+            productEntity.setAvgRate(productModel.getAvgRate());
             iProductRepository.save(productEntity);
             return true;
         } catch (Exception e){

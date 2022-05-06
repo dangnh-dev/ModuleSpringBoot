@@ -11,19 +11,21 @@ import com.example.demo.service.ICategoryService;
 import com.example.demo.service.IProductService;
 import com.example.demo.service.IRateService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.*;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Controller
+@RequestMapping("/home")
 public class HomeController {
     @Autowired
     ICategoryService iCategoryService;
@@ -33,7 +35,7 @@ public class HomeController {
     IRateService iRateService;
 
     public List<CategoryDTO> getCategoryList(){
-        List<CategoryModel> categoryModelList = iCategoryService.getAll();
+        List<CategoryModel> categoryModelList = iCategoryService.getAllCategory();
         List<CategoryDTO> categoryDTOList = new ArrayList<>();
         categoryModelList.forEach(c -> {
             CategoryDTO categoryDTO = new CategoryDTO().toDTO(c);
@@ -42,14 +44,42 @@ public class HomeController {
         return categoryDTOList;
     }
 
-    public List<ProductDTO> getProductList(){
-        List<ProductModel> productModelList = iProductService.getAll();
-        List<ProductDTO> productDTOList = new ArrayList<>();
-        productModelList.forEach(p -> {
-            ProductDTO productDTO = new ProductDTO().toDTO(p);
-            productDTOList.add(productDTO);
+    public Page<ProductDTO> getProductList(Pageable pageable){
+        Page<ProductModel> productModelPage = iProductService.getAll(pageable);
+        return productModelPage.map(productModel -> {
+            List<RatingModel> ratingModelList = iRateService.findAllByProductId(productModel.getId());
+            if (!ratingModelList.isEmpty()){
+                int total = ratingModelList.size();
+                List<Float> rates = ratingModelList.stream().map(RatingModel::getStar).collect(Collectors.toList());
+                float avgRate = 0;
+                for (Float star: rates) {
+                    avgRate += star;
+                }
+                avgRate /= total;
+                productModel.setAvgRate(avgRate);
+                iProductService.edit(productModel);
+            }
+            return new ProductDTO().toDTO(productModel);
         });
-        return productDTOList;
+    }
+
+    public Page<ProductDTO> getProductListByCategory(Long id, Pageable pageable){
+        Page<ProductModel> productModelPage = iProductService.findByCategoryId(id, pageable);
+        return productModelPage.map(productModel -> {
+            List<RatingModel> ratingModelList = iRateService.findAllByProductId(productModel.getId());
+            if (!ratingModelList.isEmpty()){
+                int total = ratingModelList.size();
+                List<Float> rates = ratingModelList.stream().map(RatingModel::getStar).collect(Collectors.toList());
+                float avgRate = 0;
+                for (Float star: rates) {
+                    avgRate += star;
+                }
+                avgRate /= total;
+                productModel.setAvgRate(avgRate);
+                iProductService.edit(productModel);
+            }
+            return new ProductDTO().toDTO(productModel);
+        });
     }
 
     public List<NavbarDTO> getNavbar(){
@@ -80,11 +110,21 @@ public class HomeController {
         return navbarDTOList;
     }
 
-    @GetMapping(value = {"/", "/home"})
+    @GetMapping
     public String homePage(Model model){
-        model.addAttribute("productList", getProductList());
+        Pageable pageable = PageRequest.of(0, 8, Sort.by(Sort.Direction.ASC, "id"));
+        Page<ProductDTO> productDTOPage = getProductList(pageable);
+        model.addAttribute("productList", productDTOPage);
+        model.addAttribute("pageNumber", productDTOPage.getTotalPages());
         model.addAttribute("categoryList", getNavbar());
         return "index";
+    }
+
+    @GetMapping("/paging")
+    public ResponseEntity<?> pagination(Model model, @RequestParam("page")int page, @RequestParam("size")int size){
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.ASC, "id"));
+        Page<ProductDTO> productEntityPage = getProductList(pageable);
+        return ResponseEntity.ok().body(productEntityPage);
     }
 
     @GetMapping("/detail/{id}")
@@ -98,7 +138,7 @@ public class HomeController {
             ratingDTOList.add(ratingDTO);
         });
         model.addAttribute("product", productDTO);
-        model.addAttribute("rating", new RatingDTO());
+        model.addAttribute("rateDto", new RatingDTO());
         model.addAttribute("categoryList", getNavbar());
         model.addAttribute("ratingList", ratingDTOList);
         return "item-detail";
@@ -110,6 +150,16 @@ public class HomeController {
         ratingDTO.setProductEntityId(id);
         RatingModel ratingModel = new RatingModel().fromDTOToModel(ratingDTO);
         iRateService.save(ratingModel);
-        return "redirect:/detail/"+id;
+        return "redirect:/home/detail/"+id;
+    }
+
+    @GetMapping("/category/{id}")
+    public String getProductByCategory(@PathVariable Long id, Model model){
+        Pageable pageable = PageRequest.of(0, 8, Sort.by(Sort.Direction.ASC, "id"));
+        Page<ProductDTO> productDTOPage = getProductListByCategory(id, pageable);
+        model.addAttribute("productList", productDTOPage);
+        model.addAttribute("pageNumber", productDTOPage.getTotalPages());
+        model.addAttribute("categoryList", getNavbar());
+        return "index";
     }
 }

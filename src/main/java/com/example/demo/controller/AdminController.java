@@ -16,13 +16,14 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
-import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import javax.annotation.security.RolesAllowed;
 import java.util.ArrayList;
 import java.util.List;
 
 @Controller
 @RequestMapping("/admin")
+@RolesAllowed(value = "ROLE_ADMIN")
 public class AdminController {
     @Autowired
     ICategoryService iCategoryService;
@@ -32,7 +33,7 @@ public class AdminController {
     ResourcesConfig resourcesConfig;
 
     public List<CategoryDTO> getCategoryList(){
-        List<CategoryModel> categoryModelList = iCategoryService.getAll();
+        List<CategoryModel> categoryModelList = iCategoryService.getAllCategory();
         List<CategoryDTO> categoryDTOList = new ArrayList<>();
         categoryModelList.forEach(c -> {
             CategoryDTO categoryDTO = new CategoryDTO().toDTO(c);
@@ -42,7 +43,7 @@ public class AdminController {
     }
 
     public List<ProductDTO> getProductList(){
-        List<ProductModel> productModelList = iProductService.getAll();
+        List<ProductModel> productModelList = iProductService.findAll();
         List<ProductDTO> productDTOList = new ArrayList<>();
         productModelList.forEach(p -> {
             ProductDTO productDTO = new ProductDTO().toDTO(p);
@@ -54,6 +55,11 @@ public class AdminController {
     @GetMapping
     public String adminPage(){
         return "admin/admin-view";
+    }
+
+    @GetMapping("/bar-chart")
+    public ResponseEntity<?> adminBarChartData(){
+        return ResponseEntity.ok().body(getProductList());
     }
 
     @GetMapping("/tables")

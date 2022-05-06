@@ -33,4 +33,6 @@ public class ProductEntity {
     private CategoryEntity category;
     @OneToMany(mappedBy = "productEntity")
     private List<RatingEntity> rates;
+    @Column(name = "avg_rate", columnDefinition = "float default 0")
+    private float avgRate;
 }

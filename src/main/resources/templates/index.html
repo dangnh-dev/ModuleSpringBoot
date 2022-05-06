@@ -17,7 +17,7 @@
         <!-- Section-->
         <section class="py-5">
             <div class="container px-4 px-lg-5 mt-5">
-                <div class="row gx-4 gx-lg-5 row-cols-2 row-cols-md-3 row-cols-xl-4 justify-content-center">
+                <div class="row gx-4 gx-lg-5 row-cols-2 row-cols-md-3 row-cols-xl-4 justify-content-center" id="listProduct">
                     <div class="col mb-5" th:each="p: ${productList}">
                         <div class="card h-100">
                             <!-- Sale badge-->
@@ -28,7 +28,11 @@
                             <div class="card-body p-4">
                                 <div class="text-center">
                                     <!-- Product name-->
-                                    <a class="product-name" th:href="|@{/detail/}${p.id}|"><h5 class="fw-bolder" th:text="${p.name}"></h5></a>
+                                    <a class="product-name" th:href="|@{/home/detail/}${p.id}|"><h5 class="fw-bolder" th:text="${p.name}"></h5></a>
+                                    <!-- Product reviews-->
+                                    <div class="d-flex justify-content-center small text-warning mb-2">
+                                        <div class="rate" th:attr="data-rate-value=${p.avgRate}" style="font-size: 20px"></div>
+                                    </div>
                                     <!-- Product price-->
                                     <span th:unless="${p.sale != 0}" th:text="'$'+${p.price}"></span>
                                     <th:block th:if="${p.sale != 0}" th:with="salePrice = ${p.price - (p.price * p.sale / 100)}">
@@ -43,37 +47,12 @@
                             </div>
                         </div>
                     </div>
-                    <div class="col mb-5">
-                        <div class="card h-100">
-                            <!-- Sale badge-->
-                            <div class="badge bg-dark text-white position-absolute" style="top: 0.5rem; right: 0.5rem">Sale</div>
-                            <!-- Product image-->
-                            <img class="card-img-top" src="https://dummyimage.com/450x300/dee2e6/6c757d.jpg" alt="..." style="border-bottom: 2px solid #000;"/>
-                            <!-- Product details-->
-                            <div class="card-body p-4">
-                                <div class="text-center">
-                                    <!-- Product name-->
-                                    <h5 class="fw-bolder">Special Item</h5>
-                                    <!-- Product reviews-->
-                                    <div class="d-flex justify-content-center small text-warning mb-2">
-                                        <div class="bi-star-fill"></div>
-                                        <div class="bi-star-fill"></div>
-                                        <div class="bi-star-fill"></div>
-                                        <div class="bi-star-half"></div>
-                                        <div class="bi-star"></div>
-                                    </div>
-                                    <!-- Product price-->
-                                    <span class="text-muted text-decoration-line-through">$20.00</span>
-                                    $18.00
-                                </div>
-                            </div>
-                            <!-- Product actions-->
-                            <div class="card-footer p-4 pt-0 border-top-0 bg-transparent">
-                                <div class="text-center"><a class="btn btn-outline-dark mt-auto">Add to cart</a></div>
-                            </div>
-                        </div>
-                    </div>
                 </div>
+            </div>
+            <div class="container-fluid my-2" style="text-align: center">
+                <th:block th:each="i: ${#numbers.sequence(1, pageNumber)}" th:if="${i>0}">
+                    <button class="btn btn-primary mx-1" th:text="${i}" th:value="${i - 1}" onclick="selectPage(this)"></button>
+                </th:block>
             </div>
         </section>
         <!-- Footer-->
@@ -100,6 +79,90 @@
                     }
                 })
             }
+
+            var limit = 8;
+            function selectPage(objButton) {
+                $.ajax({
+                    url: '/home/paging?page=' + objButton.value + '&size=' + limit,
+                    type: 'GET',
+                    contentType: 'application/json',
+                    dateType: 'json',
+                    success: function (data) {
+                        $('#listProduct div').remove();
+                        const obj = data.content;
+                        obj.map(p => {
+                            if (p.sale != 0) {
+                                var salePrice = p.price - (p.price * p.sale / 100);
+                                $('#listProduct').append(`
+                                        <div class="col mb-5">
+                                            <div class="card h-100">
+                                                <!-- Sale badge-->
+                                                <div class="badge bg-dark text-white position-absolute" style="top: 0.5rem; right: 0.5rem">Sale</div>
+                                                <!-- Product image-->
+                                                <img class="card-img-top" src="/images/${p.image}" alt="..." style="border-bottom: 2px solid #000; height: 157px;" />
+                                                <!-- Product details-->
+                                                <div class="card-body p-4">
+                                                    <div class="text-center">
+                                                        <!-- Product name-->
+                                                        <a class="product-name" href="/detail/${p.id}"><h5 class="fw-bolder">${p.name}</h5></a>
+                                                        <!-- Product reviews-->
+                                                        <div class="d-flex justify-content-center small text-warning mb-2">
+                                                            <div class="rate" data-rate-value=${p.avgRate}  style="font-size: 20px"></div>
+                                                        </div>
+                                                        <!-- Product price-->
+                                                        <span class="text-muted text-decoration-line-through">$${p.price}</span>
+                                                        <span >$${salePrice}</span>
+                                                    </div>
+                                                </div>
+                                                <!-- Product actions-->
+                                                <div class="card-footer p-4 pt-0 border-top-0 bg-transparent">
+                                                    <div class="text-center"><a class="btn btn-outline-dark mt-auto" onclick=addToCart(${p.id})>Add to cart</a></div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    `)
+                            } else {
+                                $('#listProduct').append(`
+                                        <div class="col mb-5">
+                                            <div class="card h-100">
+                                               <!-- Product image-->
+                                                <img class="card-img-top" src="/images/${p.image}" alt="..." style="border-bottom: 2px solid #000; height: 157px;" />
+                                                <!-- Product details-->
+                                                <div class="card-body p-4">
+                                                    <div class="text-center">
+                                                        <!-- Product name-->
+                                                        <a class="product-name" href="/detail/${p.id}"><h5 class="fw-bolder">${p.name}</h5></a>
+                                                        <!-- Product reviews-->
+                                                        <div class="d-flex justify-content-center small text-warning mb-2">
+                                                            <div class="rate" data-rate-value=${p.avgRate}  style="font-size: 20px"></div>
+                                                        </div>
+                                                        <!-- Product price-->
+                                                        <span>$${p.price}</span>
+                                                    </div>
+                                                </div>
+                                                <!-- Product actions-->
+                                                <div class="card-footer p-4 pt-0 border-top-0 bg-transparent">
+                                                    <div class="text-center"><a class="btn btn-outline-dark mt-auto" onclick=addToCart(${p.id})>Add to cart</a></div>
+                                                </div>
+                                            </div>
+                                        </div>
+                            `)
+                            }
+                        })
+                        $('.rate').rate({
+                            readonly: true
+                        });
+                    },
+                    error: function (jqXhr, textStatus, errorMessage) {
+                        console.log('Error' + errorMessage);
+                    }
+                })
+            }
+            $(document).ready(function() {
+                $('.rate').rate({
+                    readonly: true
+                });
+            })
         </script>
     </body>
 </html>

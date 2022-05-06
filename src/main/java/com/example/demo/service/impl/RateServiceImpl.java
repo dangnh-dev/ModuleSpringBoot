@@ -63,14 +63,4 @@ public class RateServiceImpl implements IRateService {
             return false;
         }
     }
-
-    @Override
-    public boolean edit(RatingModel ratingModel) {
-        return false;
-    }
-
-    @Override
-    public boolean delete(Long id) {
-        return false;
-    }
 }

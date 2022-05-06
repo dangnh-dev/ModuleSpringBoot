@@ -5,6 +5,8 @@ import com.example.demo.model.CategoryModel;
 import com.example.demo.repository.ICategoryRepository;
 import com.example.demo.service.ICategoryService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -17,7 +19,11 @@ public class CategoryServiceImpl implements ICategoryService {
     ICategoryRepository iCategoryRepository;
 
     @Override
-    public List<CategoryModel> getAll() {
+    public Page<CategoryModel> getAll(Pageable pageable) {
+        return null;
+    }
+
+    public List<CategoryModel> getAllCategory() {
         List<CategoryEntity> categoryEntityList = iCategoryRepository.findAll();
         List<CategoryModel> categoryModelList = new ArrayList<>();
         categoryEntityList.forEach(c -> {

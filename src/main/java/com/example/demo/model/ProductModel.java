@@ -19,6 +19,7 @@ public class ProductModel {
     private Integer sale;
     private Integer amount;
     private Long categoryId;
+    private float avgRate;
 
     public ProductModel fromEntityToModel(ProductEntity productEntity){
         return ProductModel.builder()
@@ -29,6 +30,7 @@ public class ProductModel {
                 .sale(productEntity.getSale())
                 .amount(productEntity.getAmount())
                 .categoryId(productEntity.getCategory().getId())
+                .avgRate(productEntity.getAvgRate())
                 .build();
     }
 
@@ -41,6 +43,7 @@ public class ProductModel {
                 .sale(productDTO.getSale())
                 .amount(productDTO.getAmount())
                 .categoryId(productDTO.getCategoryId())
+                .avgRate(productDTO.getAvgRate())
                 .build();
     }
 }

@@ -18,6 +18,7 @@ public class ProductDTO {
     private Integer sale;
     private Integer amount;
     private Long categoryId;
+    private float avgRate;
 
     public ProductDTO toDTO(ProductModel productModel){
         return ProductDTO.builder()
@@ -28,6 +29,7 @@ public class ProductDTO {
                 .sale(productModel.getSale())
                 .amount(productModel.getAmount())
                 .categoryId(productModel.getCategoryId())
+                .avgRate(productModel.getAvgRate())
                 .build();
     }
 }

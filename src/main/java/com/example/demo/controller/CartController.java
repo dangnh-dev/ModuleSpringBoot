@@ -42,7 +42,8 @@ public class CartController {
         } else {
             ProductModel productModel = iProductService.findById(id);
             ProductDTO productDTO = new ProductDTO().toDTO(productModel);
-            productDTO.setPrice(productDTO.getPrice() - (productDTO.getPrice() * productDTO.getSale() / 100));
+            if (productDTO.getSale() != 0)
+                productDTO.setPrice(productDTO.getPrice() - (productDTO.getPrice() * productDTO.getSale() / 100));
             cart.put(id, new CartProduct(1, productDTO));
         }
         session.setAttribute("cart", cart);
