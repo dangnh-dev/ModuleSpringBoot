@@ -86,7 +86,7 @@
                     url: '/home/paging?page=' + objButton.value + '&size=' + limit,
                     type: 'GET',
                     contentType: 'application/json',
-                    dateType: 'json',
+                    dataType: 'json',
                     success: function (data) {
                         $('#listProduct div').remove();
                         const obj = data.content;
